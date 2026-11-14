@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07152e">
+<meta name="description" content="Classic Ludo — play with friends or challenge the CPU. No login required.">
+<title>Classic Ludo — Play with Friends or CPU</title>
+<style>
+:root{
+  --navy:#07152e;--navy2:#0d2850;--panel:#102e59;--gold:#ffd76a;--text:#f5f8ff;--muted:#a9bddc;
+  --red:#f04452;--green:#0ecb83;--blue:#20a9ef;--yellow:#f6c638;
+  --shadow:0 18px 50px rgba(0,0,0,.34);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,ui-rounded,"Arial Rounded MT Bold",system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);background:#061229}
+body{
+  min-height:100vh;overflow-x:hidden;
+  background:
+    radial-gradient(ellipse at 50% 35%,rgba(22,119,213,.28),transparent 45%),
+    radial-gradient(circle at 12% 85%,rgba(0,155,255,.16),transparent 28%),
+    linear-gradient(145deg,#050b19,#0b2850 55%,#06152e);
+}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;background-image:linear-gradient(45deg,transparent 45%,rgba(255,255,255,.08) 46%,transparent 48%),linear-gradient(-45deg,transparent 45%,rgba(255,255,255,.06) 46%,transparent 48%);background-size:44px 44px;mask-image:linear-gradient(to bottom,black,transparent 95%)}
+button{font:inherit}
+.app{position:relative;z-index:1;max-width:1160px;margin:0 auto;padding:clamp(14px,3vw,30px);min-height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-mark{width:46px;height:46px;border-radius:15px;background:linear-gradient(145deg,#2db5ff,#1453a6);display:grid;place-items:center;box-shadow:0 7px 22px #0079d577,inset 0 1px 1px #ffffff88;border:1px solid #ffffff55;font-size:25px}
+.brand-title{font-weight:1000;letter-spacing:.05em;font-size:clamp(18px,3vw,25px);text-transform:uppercase;line-height:1}
+.brand-sub{font-size:11px;color:#a8c7ef;letter-spacing:.17em;text-transform:uppercase;margin-top:5px}
+.pill{border:1px solid #81b8f744;background:#0b2a50aa;color:#c5dcfb;border-radius:999px;padding:9px 13px;font-size:12px;font-weight:800;white-space:nowrap}
+.view{display:none}.view.active{display:block;animation:fadeIn .35s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.hero{max-width:790px;margin:clamp(26px,7vh,72px) auto 28px;text-align:center}
+.eyebrow{color:var(--gold);font-size:12px;font-weight:900;letter-spacing:.23em;text-transform:uppercase}
+h1{font-size:clamp(35px,7vw,66px);line-height:.98;margin:12px 0 16px;font-weight:1000;letter-spacing:-.055em;text-shadow:0 7px 24px #0008}
+.hero p{color:#bbd0ed;line-height:1.6;font-size:clamp(14px,2.2vw,17px);max-width:590px;margin:0 auto}
+.mode-heading{text-align:center;font-size:14px;text-transform:uppercase;letter-spacing:.14em;color:#d8e7ff;margin:34px 0 14px;font-weight:900}
+.mode-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;max-width:960px;margin:0 auto}
+.mode-card{position:relative;overflow:hidden;min-height:184px;text-align:left;border:1px solid #8ccaff38;border-radius:22px;color:white;background:linear-gradient(155deg,#16477cdd,#0b2549ee);padding:18px;cursor:pointer;box-shadow:0 12px 25px #0003;transition:transform .2s,border-color .2s,box-shadow .2s}
+.mode-card:hover,.mode-card:focus-visible{transform:translateY(-5px);border-color:#ffd76a;box-shadow:0 17px 35px #0005,0 0 0 2px #ffd76a22;outline:none}
+.mode-card:after{content:"";position:absolute;width:125px;height:125px;border-radius:50%;right:-48px;bottom:-54px;background:radial-gradient(circle,#4cbcff3d,transparent 70%)}
+.mode-number{display:block;font-size:36px;font-weight:1000;letter-spacing:-.05em;color:var(--gold);line-height:1}
+.mode-card strong{display:block;font-size:17px;margin:13px 0 5px}
+.mode-card small{color:#b7cdec;line-height:1.45;font-size:12px;display:block;max-width:180px}
+.mode-arrow{position:absolute;right:16px;top:17px;color:#9ed7ff;font-size:20px;font-weight:900}
+.mode-foot{text-align:center;color:#91acd0;font-size:12px;margin:22px auto 0;line-height:1.6}
+.rules-strip{display:flex;justify-content:center;flex-wrap:wrap;gap:9px;margin-top:22px}
+.rules-strip span{font-size:11px;color:#bcd2ef;border:1px solid #ffffff20;background:#ffffff08;border-radius:99px;padding:7px 11px}
+/* Game layout */
+.game-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 17px}
+.back-btn,.ghost-btn{border:1px solid #9bc7fa50;color:#d8e9ff;background:#0d2d55;border-radius:13px;padding:10px 13px;font-weight:800;font-size:13px;cursor:pointer}
+.back-btn:hover,.ghost-btn:hover{background:#174477}
+.game-title{font-size:clamp(19px,3vw,27px);font-weight:1000;letter-spacing:-.03em;text-align:center}
+.game-title span{color:var(--gold)}
+.game-layout{display:grid;grid-template-columns:minmax(0,1fr) 285px;gap:20px;align-items:start}
+.board-card{border:1px solid #76b9f75c;border-radius:26px;padding:clamp(8px,2vw,16px);background:linear-gradient(145deg,#0d3d70,#08234b 75%);box-shadow:var(--shadow),inset 0 1px 0 #ffffff30;position:relative}
+.board-rim{padding:8px;border-radius:17px;background:linear-gradient(140deg,#42b9ff,#1d5ea5 45%,#0b3971);box-shadow:inset 0 0 0 1px #ffffff55}
+#ludoBoard{display:block;width:100%;height:auto;border-radius:10px;overflow:visible;touch-action:manipulation}
+.board-side{display:flex;flex-direction:column;gap:12px}
+.info-card{background:linear-gradient(150deg,#123b6b,#0b2448);border:1px solid #7abaff3e;border-radius:19px;padding:15px;box-shadow:0 12px 25px #0002}
+.info-label{font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:#a9c9ef;font-weight:900}
+.turn-player{display:flex;align-items:center;gap:11px;margin-top:10px}
+.player-orb{width:43px;height:43px;border-radius:50%;border:3px solid #ffffffaa;box-shadow:0 5px 12px #0005;flex:none}
+.turn-name{font-size:18px;font-weight:1000;line-height:1.05}
+.turn-kind{font-size:11px;color:#b8cdea;margin-top:5px}
+.turn-message{color:#bad2f1;font-size:12px;line-height:1.45;margin-top:12px;min-height:34px}
+.dice-area{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:13px}
+.die{width:76px;height:76px;border-radius:18px;background:linear-gradient(145deg,#fff,#dce8fa);box-shadow:0 8px 0 #91a8c8,0 12px 20px #0004,inset 0 2px 4px #fff;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:13px;gap:4px;flex:none;transform:rotate(-3deg)}
+.pip{width:10px;height:10px;border-radius:50%;background:#122c50;align-self:center;justify-self:center;opacity:0}
+.pip.show{opacity:1}
+.roll-btn{flex:1;border:0;border-radius:15px;padding:14px 10px;background:linear-gradient(180deg,#ffe18b,#f5ad24);color:#3b2600;font-weight:1000;font-size:15px;letter-spacing:.02em;cursor:pointer;box-shadow:0 5px 0 #b66b0a,0 10px 17px #0004;transition:transform .12s,filter .12s}
+.roll-btn:hover{filter:brightness(1.07)}.roll-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b66b0a}.roll-btn:disabled{opacity:.48;cursor:not-allowed;filter:grayscale(.4)}
+.players-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.players-title b{font-size:12px;text-transform:uppercase;letter-spacing:.1em}
+.players-list{display:grid;gap:8px}
+.player-row{display:flex;align-items:center;gap:9px;border:1px solid #ffffff15;background:#ffffff08;border-radius:12px;padding:8px 9px;min-width:0}
+.player-row.current{border-color:var(--gold);background:#ffda7020;box-shadow:0 0 0 1px #ffda7022}
+.mini-orb{width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 2px #ffffff44;flex:none}
+.player-row-name{font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.player-row-meta{font-size:10px;color:#aac4e7;white-space:nowrap}
+.player-status{font-size:9px;font-weight:900;border-radius:99px;padding:4px 6px;background:#ffffff14;color:#c8dcf7}
+.player-status.cpu{color:#ffdf87;background:#ffda7018}
+.rules-note{font-size:11px;color:#9db9df;line-height:1.55;margin:0}
+.status-line{text-align:center;color:#c6dbf7;font-size:11px;line-height:1.45;margin:12px 0 0}
+/* SVG board */
+.board-bg{fill:#f9fbff}.base{stroke:#fdfdff;stroke-width:4}.base-red{fill:#f04452}.base-green{fill:#10bd7b}.base-blue{fill:#20a9ef}.base-yellow{fill:#f3c536}
+.base-inner{fill:#fff;stroke:#e2e9f3;stroke-width:2}.track-tile{fill:#fff;stroke:#cbd5e3;stroke-width:1.5}.track-start-red{fill:#ffb3b8}.track-start-green{fill:#a8f2d3}.track-start-blue{fill:#b4e7ff}.track-start-yellow{fill:#ffec9e}
+.home-red{fill:#f7a0a5;stroke:#fff;stroke-width:1.5}.home-green{fill:#8de9c2;stroke:#fff;stroke-width:1.5}.home-blue{fill:#91dfff;stroke:#fff;stroke-width:1.5}.home-yellow{fill:#ffe27c;stroke:#fff;stroke-width:1.5}
+.safe-star{font-size:25px;fill:#9aa8ba;stroke:#fff;stroke-width:.4;text-anchor:middle;dominant-baseline:middle}
+.token{cursor:pointer;transition:filter .15s}.token circle.outer{stroke:#fff;stroke-width:3;filter:url(#tokenShadow)}.token circle.inner{fill:#ffffff66;stroke:#ffffffaa;stroke-width:1.3}.token text{font-size:12px;font-weight:1000;fill:#fff;text-anchor:middle;dominant-baseline:middle;paint-order:stroke;stroke:#0002;stroke-width:1.5px;pointer-events:none}.token.selectable{filter:drop-shadow(0 0 7px #ffe37a);animation:tokenPulse .8s infinite alternate}.token.selectable circle.outer{stroke:#ffdf64;stroke-width:5}.token:focus{outline:none}
+@keyframes tokenPulse{from{opacity:1}to{opacity:.76}}
+.token.no-select{cursor:default}
+.center-label{font-size:10px;font-weight:1000;letter-spacing:.08em;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#17365b;stroke-width:2px}
+/* overlays */
+.overlay{position:fixed;inset:0;z-index:20;background:#020817c9;backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
+.overlay.show{display:flex;animation:fadeIn .2s ease}
+.modal{width:min(420px,100%);border-radius:25px;padding:25px;text-align:center;background:linear-gradient(150deg,#164b80,#0b2448);border:1px solid #9ccfff70;box-shadow:0 25px 80px #0009}
+.modal-icon{font-size:43px;margin-bottom:7px}.modal h2{font-size:27px;margin:5px 0 8px}.modal p{color:#bfd4ef;font-size:14px;line-height:1.55;margin:0 0 20px}
+.modal-actions{display:flex;gap:10px}.modal-actions button{flex:1}
+.primary-btn{border:0;border-radius:14px;padding:13px 16px;background:linear-gradient(180deg,#ffe18b,#f4ad24);color:#3b2600;font-weight:1000;cursor:pointer;box-shadow:0 4px 0 #b66b0a}.secondary-btn{border:1px solid #a8cefa66;border-radius:14px;padding:13px 16px;background:#ffffff10;color:#e5f0ff;font-weight:900;cursor:pointer}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,18px);opacity:0;pointer-events:none;z-index:30;background:#071c39;border:1px solid #a8cefa66;color:#fff;padding:11px 16px;border-radius:99px;font-weight:800;font-size:12px;box-shadow:0 8px 25px #0006;transition:.25s;white-space:nowrap;max-width:calc(100vw - 30px);overflow:hidden;text-overflow:ellipsis}.toast.show{opacity:1;transform:translate(-50%,0)}
+.footer{color:#7898c2;text-align:center;font-size:10px;margin:25px auto 4px}
+@media(max-width:900px){.game-layout{grid-template-columns:minmax(0,1fr) 250px;gap:13px}.info-card{padding:12px}}
+@media(max-width:720px){.app{padding:13px}.topbar{margin-bottom:14px}.pill{font-size:10px;padding:8px 10px}.mode-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-width:480px}.mode-card{min-height:158px;padding:15px}.hero{margin:34px auto 21px}.game-layout{grid-template-columns:1fr;gap:11px}.board-card{max-width:600px;width:100%;margin:0 auto;border-radius:19px}.board-side{display:grid;grid-template-columns:1fr 1fr;align-items:start}.turn-card{grid-column:1/-1}.players-card{grid-row:2;grid-column:1/-1}.rules-card{grid-column:1/-1}.players-list{grid-template-columns:repeat(2,minmax(0,1fr))}.game-head{margin-bottom:11px}.turn-message{min-height:0}.dice-area{margin-top:9px}.die{width:65px;height:65px;padding:10px}.player-row{padding:7px}.rules-card{display:none}}
+@media(max-width:420px){.brand-mark{width:40px;height:40px}.brand-title{font-size:17px}.brand-sub{font-size:9px}.mode-card{min-height:147px}.mode-number{font-size:32px}.mode-card strong{font-size:15px}.mode-card small{font-size:11px}.game-title{font-size:18px}.board-rim{padding:5px}.board-card{padding:6px}.board-side{grid-template-columns:1fr}.turn-card,.players-card{grid-column:1}.players-card{grid-row:auto}.players-list{grid-template-columns:repeat(2,minmax(0,1fr))}.info-card{border-radius:15px}.game-head .pill{display:none}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><div class="brand-mark">🎲</div><div><div class="brand-title">Classic Ludo</div><div class="brand-sub">Roll • Race • Win</div></div></div>
+    <div class="pill">✦ NO LOGIN · FREE TO PLAY</div>
+  </header>
+
+  <main>
+    <section id="menuView" class="view active">
+      <div class="hero">
+        <div class="eyebrow">The timeless board game</div>
+        <h1>Ready to roll?</h1>
+        <p>Bring your tokens home, block your rivals and become the Ludo champion. Play with friends on one device or challenge the CPU.</p>
+      </div>
+      <div class="mode-heading">Choose your players</div>
+      <div class="mode-grid">
+        <button class="mode-card" data-humans="1"><span class="mode-arrow">↗</span><span class="mode-number">1 <small style="font-size:17px;color:#a9c9ef">vs</small> 3</span><strong>Solo challenge</strong><small>1 real player + 3 CPU opponents</small></button>
+        <button class="mode-card" data-humans="2"><span class="mode-arrow">↗</span><span class="mode-number">2 <small style="font-size:17px;color:#a9c9ef">vs</small> 2</span><strong>Play together</strong><small>2 real players + 2 CPU opponents</small></button>
+        <button class="mode-card" data-humans="3"><span class="mode-arrow">↗</span><span class="mode-number">3 <small style="font-size:17px;color:#a9c9ef">vs</small> 1</span><strong>Friends squad</strong><small>3 real players + 1 CPU opponent</small></button>
+        <button class="mode-card" data-humans="4"><span class="mode-arrow">↗</span><span class="mode-number">4 <small style="font-size:17px;color:#a9c9ef">×</small></span><strong>All friends</strong><small>4 real players · pass the device</small></button>
+      </div>
+      <div class="rules-strip"><span>🎯 Roll a 6 to enter</span><span>⭐ Safe squares</span><span>⚡ Extra turn on 6</span><span>🏆 Exact roll to finish</span></div>
+      <p class="mode-foot">Local pass-and-play · CPU players move automatically · Your game runs in this browser</p>
+    </section>
+
+    <section id="gameView" class="view">
+      <div class="game-head">
+        <button id="backToMenu" class="back-btn">← Modes</button>
+        <div class="game-title">CLASSIC <span>LUDO</span></div>
+        <div class="pill" id="modeBadge">1 HUMAN · 3 CPU</div>
+      </div>
+      <div class="game-layout">
+        <div class="board-card">
+          <div class="board-rim">
+            <svg id="ludoBoard" viewBox="0 0 600 600" role="img" aria-label="Ludo board with four colored home bases and tokens">
+              <defs>
+                <filter id="tokenShadow" x="-60%" y="-60%" width="220%" height="220%"><feDropShadow dx="0" dy="3" stdDeviation="2.5" flood-color="#06152c" flood-opacity=".5"/></filter>
+                <linearGradient id="boardGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#eaf0fa"/></linearGradient>
+              </defs>
+              <rect x="26" y="26" width="548" height="548" rx="8" fill="url(#boardGradient)" stroke="#d4e1f1" stroke-width="3"/>
+              <g id="boardStatic"></g>
+              <g id="tokenLayer"></g>
+            </svg>
+          </div>
+        </div>
+        <aside class="board-side">
+          <div class="info-card turn-card">
+            <div class="info-label">Current turn</div>
+            <div class="turn-player"><div class="player-orb" id="activeOrb"></div><div><div class="turn-name" id="activeName">Player 1</div><div class="turn-kind" id="activeKind">Your turn</div></div></div>
+            <div class="turn-message" id="turnMessage">Roll the dice to start your turn.</div>
+            <div class="dice-area">
+              <div class="die" id="dieFace" aria-label="Dice: not rolled">
+                <i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i>
+              </div>
+              <button id="rollBtn" class="roll-btn">ROLL DICE</button>
+            </div>
+            <div class="status-line" id="moveHint">You need a 6 to bring a token out.</div>
+          </div>
+          <div class="info-card players-card">
+            <div class="players-title"><b>Players</b><span class="info-label">4 seats</span></div>
+            <div class="players-list" id="playersList"></div>
+          </div>
+          <div class="info-card rules-card">
+            <div class="info-label" style="margin-bottom:8px">How to play</div>
+            <p class="rules-note">Roll a 6 to leave your yard. Tap a glowing token to move it. Land on a rival to send them home, unless the square is safe. Reach the center with an exact roll.</p>
+          </div>
+        </aside>
+      </div>
+      <div class="footer">Classic Ludo · Made for friends and family</div>
+    </section>
+  </main>
+</div>
+
+<div id="passOverlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="passTitle">
+  <div class="modal"><div class="modal-icon">🤝</div><h2 id="passTitle">Pass the device</h2><p id="passText">Hand the device to the next player.</p><button id="passReady" class="primary-btn" style="width:100%">I'M READY</button></div>
+</div>
+<div id="winOverlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+  <div class="modal"><div class="modal-icon">🏆</div><h2 id="winTitle">We have a winner!</h2><p id="winText">Player 1 has brought all tokens home.</p><div class="modal-actions"><button id="playAgain" class="primary-btn">PLAY AGAIN</button><button id="winMenu" class="secondary-btn">MODES</button></div></div>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+const COLORS = [
+  {id:'red',name:'Red',hex:'#f04452',light:'#ffb3b8',start:[8,1],lane:[[7,1],[7,2],[7,3],[7,4],[7,5],[7,6]],base:[[2,2],[2,4],[4,2],[4,4]]},
+  {id:'green',name:'Green',hex:'#10bd7b',light:'#a8f2d3',start:[1,8],lane:[[1,7],[2,7],[3,7],[4,7],[5,7],[6,7]],base:[[2,10],[2,12],[4,10],[4,12]]},
+  {id:'yellow',name:'Yellow',hex:'#f3c536',light:'#ffec9e',start:[6,13],lane:[[7,13],[7,12],[7,11],[7,10],[7,9],[7,8]],base:[[10,10],[10,12],[12,10],[12,12]]},
+  {id:'blue',name:'Blue',hex:'#20a9ef',light:'#b4e7ff',start:[13,6],lane:[[13,7],[12,7],[11,7],[10,7],[9,7],[8,7]],base:[[10,2],[10,4],[12,2],[12,4]]}
+];
+// 52-square shared track, laid out clockwise around the four home lanes.
+const TRACK = [
+ [6,1],[6,2],[6,3],[6,4],[6,5],[5,6],[4,6],[3,6],[2,6],[1,6],[0,6],[0,7],[0,8],
+ [1,8],[2,8],[3,8],[4,8],[5,8],[6,9],[6,10],[6,11],[6,12],[6,13],[6,14],[7,14],[8,14],
+ [8,13],[8,12],[8,11],[8,10],[8,9],[9,8],[10,8],[11,8],[12,8],[13,8],[14,8],[14,7],[14,6],
+ [13,6],[12,6],[11,6],[10,6],[9,6],[8,5],[8,4],[8,3],[8,2],[8,1],[8,0],[7,0],[6,0]
+];
+const STARTS = COLORS.map(c => TRACK.findIndex(p => p[0]===c.start[0] && p[1]===c.start[1]));
+const CELL=36, OFFSET=30;
+const $ = id => document.getElementById(id);
+const menuView=$('menuView'), gameView=$('gameView'), boardStatic=$('boardStatic'), tokenLayer=$('tokenLayer');
+let players=[], current=0, die=null, phase='roll', validMoves=[], humans=1, turnsTaken=0, gameOver=false, toastTimer=null, cpuTimer=null, lastPlayer=-1;
+const safeCoords = new Set([...COLORS.map(c=>c.start),[6,2],[2,8],[8,12],[12,6]].map(p=>p.join(',')));
+const coordKey = p => p.join(',');
+const xy = p => ({x:OFFSET+(p[1]+.5)*CELL,y:OFFSET+(p[0]+.5)*CELL});
+const cellRect = (r,c,cls='track-tile') => `<rect class="${cls}" x="${OFFSET+c*CELL}" y="${OFFSET+r*CELL}" width="${CELL}" height="${CELL}"/>`;
+function drawStaticBoard(){
+ let s='';
+ s += `<rect x="${OFFSET}" y="${OFFSET}" width="${15*CELL}" height="${15*CELL}" rx="5" fill="#f8fbff"/>`;
+ const bases=[{r:0,c:0,cls:'base-red'},{r:0,c:9,cls:'base-green'},{r:9,c:9,cls:'base-yellow'},{r:9,c:0,cls:'base-blue'}];
+ for(const b of bases){
+   const x=OFFSET+b.c*CELL,y=OFFSET+b.r*CELL;
+   s+=`<rect class="${b.cls} base" x="${x}" y="${y}" width="${6*CELL}" height="${6*CELL}" rx="5"/>`;
+   s+=`<rect class="base-inner" x="${x+CELL}" y="${y+CELL}" width="${4*CELL}" height="${4*CELL}" rx="8"/>`;
+ }
+ // Shared path squares.
+ TRACK.forEach((p,i)=>{
+   const color=COLORS.find(c=>c.start[0]===p[0]&&c.start[1]===p[1]);
+   let cls='track-tile'; if(color) cls+=` track-start-${color.id}`;
+   s+=cellRect(p[0],p[1],cls);
+ });
+ // Colored home columns.
+ COLORS.forEach(c=>c.lane.forEach((p)=>s+=cellRect(p[0],p[1],`home-${c.id}`)));
+ // Starting and safe-square markers.
+ const stars=[[6,2],[2,8],[8,12],[12,6]];
+ stars.forEach(p=>{const q=xy(p);s+=`<text class="safe-star" x="${q.x}" y="${q.y+1}">☆</text>`});
+ // Four-way center finish.
+ const x=OFFSET+6*CELL,y=OFFSET+6*CELL,w=3*CELL,mid=OFFSET+7.5*CELL;
+ s+=`<g stroke="#fff" stroke-width="2"><polygon points="${x},${y} ${x+w},${y} ${mid},${mid}" fill="${COLORS[1].hex}"/><polygon points="${x+w},${y} ${x+w},${y+w} ${mid},${mid}" fill="${COLORS[2].hex}"/><polygon points="${x+w},${y+w} ${x},${y+w} ${mid},${mid}" fill="${COLORS[3].hex}"/><polygon points="${x},${y+w} ${x},${y} ${mid},${mid}" fill="${COLORS[0].hex}"/></g>`;
+ s+=`<circle cx="${mid}" cy="${mid}" r="16" fill="#fff" stroke="#dbe6f5" stroke-width="3"/><text class="center-label" x="${mid}" y="${mid+3}" style="font-size:7px;stroke-width:1.3">HOME</text>`;
+ boardStatic.innerHTML=s;
+}
+function makePlayers(humanCount){
+ humans=humanCount;
+ return COLORS.map((c,i)=>({index:i,color:c,human:i<humanCount,name:i<humanCount?`Player ${i+1}`:`CPU ${i-humanCount+1}`,pawns:[-1,-1,-1,-1]}));
+}
+function positionOf(player,pawnIndex){
+ const progress=player.pawns[pawnIndex];
+ if(progress<0)return {base:true,coord:player.color.base[pawnIndex]};
+ if(progress<=51)return {base:false,coord:TRACK[(STARTS[player.index]+progress)%52]};
+ return {base:false,coord:player.color.lane[progress-52]};
+}
+function drawTokens(){
+ let tokens=[];
+ players.forEach(pl=>pl.pawns.forEach((progress,pi)=>{
+   const pos=positionOf(pl,pi);const key=pos.base?`base-${pl.index}-${pi}`:coordKey(pos.coord);
+   tokens.push({pl,pi,pos,key,selectable:phase==='move'&&pl.index===current&&validMoves.includes(pi)&&pl.human});
+ }));
+ const groups={};tokens.forEach(t=>(groups[t.key]??=[]).push(t));
+ let out='';
+ tokens.forEach(t=>{
+   let p;
+   if(t.pos.base){p=xy(t.pos.coord)}else{
+     const g=groups[t.key],idx=g.indexOf(t),n=g.length;
+     const spread=[[-8,-8],[8,-8],[-8,8],[8,8],[0,-10],[10,0],[0,10],[-10,0]];
+     const off=n===1?[0,0]:spread[idx%spread.length];p=xy(t.pos.coord);p.x+=off[0];p.y+=off[1];
+   }
+   const color=t.pl.color.hex;
+   const isValid=t.selectable;
+   const cls=`token ${isValid?'selectable':''} ${t.pl.index===current&&phase==='move'&&!isValid?'no-select':''}`;
+   out+=`<g class="${cls}" data-player="${t.pl.index}" data-pawn="${t.pi}" tabindex="${isValid?0:-1}" role="${isValid?'button':'img'}" aria-label="${t.pl.name}, token ${t.pi+1}${isValid?', tap to move':''}"><circle class="outer" cx="${p.x}" cy="${p.y}" r="13" fill="${color}"/><circle class="inner" cx="${p.x-3}" cy="${p.y-4}" r="4.2"/><text x="${p.x}" y="${p.y+1}">${t.pi+1}</text></g>`;
+ });
+ tokenLayer.innerHTML=out;
+}
+function setDieFace(value){
+ const pipEls=$('dieFace').querySelectorAll('.pip');
+ const layouts={0:[],1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+ pipEls.forEach((el,i)=>el.classList.toggle('show',(layouts[value]||[]).includes(i)));
+ $('dieFace').setAttribute('aria-label',`Dice: ${value||'not rolled'}`);
+}
+function updatePlayers(){
+ $('playersList').innerHTML=players.map((p,i)=>{
+   const finished=p.pawns.filter(v=>v===57).length;
+   return `<div class="player-row ${i===current?'current':''}"><span class="mini-orb" style="background:${p.color.hex}"></span><span class="player-row-name">${p.name}</span><span class="player-row-meta">${finished}/4</span><span class="player-status ${p.human?'':'cpu'}">${p.human?'HUMAN':'CPU'}</span></div>`;
+ }).join('');
+}
+function updateTurnUI(){
+ if(!players.length)return;
+ const p=players[current];
+ $('activeOrb').style.background=p.color.hex;
+ $('activeOrb').style.boxShadow=`0 5px 14px #0006,0 0 0 3px ${p.color.hex}44`;
+ $('activeName').textContent=p.name;
+ $('activeKind').textContent=p.human?'REAL PLAYER':'CPU OPPONENT';
+ $('rollBtn').disabled=!p.human||phase!=='roll'||gameOver;
+ $('rollBtn').textContent=!p.human?'CPU THINKING…':phase==='move'?'CHOOSE TOKEN':'ROLL DICE';
+ let msg='Roll the dice to start your turn.';
+ let hint='You need a 6 to bring a token out.';
+ if(phase==='move'&&die!==null){
+   if(validMoves.length){msg=p.human?`You rolled a ${die}. Tap one of the glowing tokens.`:`CPU rolled a ${die}. Choosing a move…`;hint=validMoves.length===1?'1 possible move':'Choose one of the glowing tokens';}
+   else{msg=`No legal move with ${die}.`;hint=die===6?'No move available — roll again.':'Next player is up.';}
+ }
+ if(!p.human&&phase==='roll'){msg='CPU is preparing its roll…';hint='The CPU plays automatically.';}
+ $('turnMessage').textContent=msg;$('moveHint').textContent=hint;
+ updatePlayers();drawTokens();
+}
+function showToast(text){const t=$('toast');t.textContent=text;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1900)}
+function playerAtTrackCell(coord,exceptPlayer){
+ const found=[];
+ players.forEach(pl=>{if(pl.index===exceptPlayer)return;pl.pawns.forEach((pr,pi)=>{if(pr>=0&&pr<=51){const c=TRACK[(STARTS[pl.index]+pr)%52];if(coordKey(c)===coordKey(coord))found.push({pl,pi})}})});
+ return found;
+}
+function getValidMoves(pl,value){
+ const possible=[];
+ pl.pawns.forEach((progress,pi)=>{
+   if(progress===57)return;
+   if(progress<0){if(value===6)possible.push(pi);return;}
+   const next=progress+value;if(next>57)return;
+   // Opponent double-pawn blocks cannot be crossed or landed on.
+   let blocked=false;
+   for(let step=1;step<=value;step++){
+     const at=progress+step;
+     if(at>51)continue;
+     const coord=TRACK[(STARTS[pl.index]+at)%52];
+     const opponents=playerAtTrackCell(coord,pl.index);
+     if(opponents.length>=2){blocked=true;break;}
+   }
+   if(!blocked)possible.push(pi);
+ });
+ return possible;
+}
+function captureAt(pl,pawnIndex){
+ const pr=pl.pawns[pawnIndex];if(pr<0||pr>51)return [];
+ const coord=TRACK[(STARTS[pl.index]+pr)%52];
+ if(safeCoords.has(coordKey(coord)))return [];
+ const found=playerAtTrackCell(coord,pl.index);
+ // Capturing a single opposing token; two opposing tokens form a blockade.
+ if(found.length===1){found[0].pl.pawns[found[0].pi]=-1;return found;}
+ return [];
+}
+function allFinished(pl){return pl.pawns.every(v=>v===57)}
+function finishGame(pl){gameOver=true;clearTimeout(cpuTimer);$('winTitle').textContent='🏆 '+pl.name+' wins!';$('winText').textContent=`${pl.name} has brought all four tokens home. What a game!`;$('winOverlay').classList.add('show');}
+function nextTurn(){
+ if(gameOver)return;
+ lastPlayer=current;current=(current+1)%4;die=null;phase='roll';validMoves=[];turnsTaken++;
+ updateTurnUI();
+ const p=players[current];
+ if(p.human){
+   if(turnsTaken>0&&humans>1){$('passTitle').textContent='Pass to '+p.name;$('passText').textContent=`Hand the device to ${p.name}. Tap ready when they are set to play.`;$('passOverlay').classList.add('show');}
+ }else{scheduleCpu(650)}
+}
+function keepTurn(message){
+ die=null;phase='roll';validMoves=[];updateTurnUI();if(message)showToast(message);
+ if(!players[current].human)scheduleCpu(600);
+}
+function finishMove(pl,pi,value){
+ const from=pl.pawns[pi];
+ const next=from<0?0:from+value;
+ pl.pawns[pi]=next;
+ const captured=captureAt(pl,pi);
+ if(next===57){showToast(`${pl.name} brought a token home!`)}
+ if(allFinished(pl)){updateTurnUI();finishGame(pl);return;}
+ const extra=value===6||captured.length>0||next===57;
+ const description=captured.length?`${pl.name} captured a rival token!`:next===57?`${pl.name} finished a token!`:value===6?`${pl.name} rolled a 6!` : '';
+ if(extra){keepTurn(description||`${pl.name} gets another turn.`)}else nextTurn();
+}
+function chooseToken(pi){
+ if(phase!=='move'||!validMoves.includes(pi)||!players[current].human||gameOver)return;
+ const val=die,pl=players[current];
+ $('passOverlay').classList.remove('show');
+ finishMove(pl,pi,val);
+}
+function rollDice(){
+ if(gameOver||phase!=='roll'||!players[current].human)return;
+ doRoll();
+}
+function doRoll(){
+ if(gameOver||phase!=='roll')return;
+ die=1+Math.floor(Math.random()*6);phase='move';validMoves=getValidMoves(players[current],die);setDieFace(die);updateTurnUI();
+ if(validMoves.length===0){
+   showToast(die===6?'No token can move. Roll again!':'No valid move.');
+   const wasSix=die===6;
+   if(wasSix){setTimeout(()=>{die=null;phase='roll';validMoves=[];updateTurnUI();if(!players[current].human)scheduleCpu(550)},850)}
+   else{setTimeout(()=>nextTurn(),950)}
+   return;
+ }
+ if(!players[current].human){scheduleCpu(650)}
+}
+function cpuScore(pl,pi,value){
+ const old=pl.pawns[pi],next=old<0?0:old+value;
+ let score=next===57?10000:0;
+ if(old<0)return score+420;
+ if(next<=51){
+   const coord=TRACK[(STARTS[pl.index]+next)%52];
+   const rivals=playerAtTrackCell(coord,pl.index);
+   if(!safeCoords.has(coordKey(coord))&&rivals.length===1)score+=1400;
+   if(safeCoords.has(coordKey(coord)))score+=160;
+   // Prefer getting tokens out of their starting segment.
+   score+=Math.min(next,25)*3;
+   // Avoid leaving a token immediately exposed to nearby rivals.
+   if(!safeCoords.has(coordKey(coord)))score-=12;
+ }else{score+=700+(next-52)*8;}
+ return score+Math.random()*8;
+}
+function scheduleCpu(delay){
+ clearTimeout(cpuTimer);
+ cpuTimer=setTimeout(()=>{
+   if(gameOver||players[current].human)return;
+   if(phase==='roll'){doCpuRoll();return;}
+   if(phase==='move')doCpuMove();
+ },delay);
+}
+function doCpuRoll(){
+ if(gameOver||players[current].human||phase!=='roll')return;
+ doRoll();
+}
+function doCpuMove(){
+ if(gameOver||players[current].human||phase!=='move'||!validMoves.length)return;
+ const pl=players[current];let best=-Infinity,chosen=validMoves[0];
+ validMoves.forEach(pi=>{const sc=cpuScore(pl,pi,die);if(sc>best){best=sc;chosen=pi}});
+ finishMove(pl,chosen,die);
+}
+function startGame(humanCount){
+ clearTimeout(cpuTimer);players=makePlayers(humanCount);current=0;die=null;phase='roll';validMoves=[];turnsTaken=0;gameOver=false;lastPlayer=-1;
+ $('modeBadge').textContent=`${humanCount} HUMAN${humanCount===1?'':'S'} · ${4-humanCount} CPU`;
+ menuView.classList.remove('active');gameView.classList.add('active');$('passOverlay').classList.remove('show');$('winOverlay').classList.remove('show');setDieFace(0);updateTurnUI();
+}
+function returnToMenu(){clearTimeout(cpuTimer);gameOver=true;gameView.classList.remove('active');menuView.classList.add('active');$('winOverlay').classList.remove('show');$('passOverlay').classList.remove('show')}
+
+// Events
+Array.from(document.querySelectorAll('.mode-card')).forEach(btn=>btn.addEventListener('click',()=>startGame(Number(btn.dataset.humans))));
+$('backToMenu').addEventListener('click',returnToMenu);
+$('rollBtn').addEventListener('click',rollDice);
+$('passReady').addEventListener('click',()=>{$('passOverlay').classList.remove('show');updateTurnUI()});
+$('playAgain').addEventListener('click',()=>startGame(humans));
+$('winMenu').addEventListener('click',returnToMenu);
+function tokenEvent(e){const g=e.target.closest('[data-player][data-pawn]');if(!g)return;const p=Number(g.dataset.player),pi=Number(g.dataset.pawn);if(p===current)chooseToken(pi)}
+tokenLayer.addEventListener('click',tokenEvent);
+tokenLayer.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tokenEvent(e)}});
+drawStaticBoard();setDieFace(0);
+})();
+</script>
+</body>
+</html>
